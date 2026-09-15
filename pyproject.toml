@@ -10,6 +10,9 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = ["rich>=13.7,<15"]
 
+[project.optional-dependencies]
+test = ["pytest>=8,<9"]
+
 [project.scripts]
 freefit = "freefit.cli:main"
 
