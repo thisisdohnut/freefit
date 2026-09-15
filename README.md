@@ -6,20 +6,115 @@ FREEFIT is a provider-aware control plane for discovering, measuring, ranking, r
 
 > Goal: make it obvious which model + provider is fastest, healthiest, cheapest/free, and most reliable **right now**.
 
-## Why FREEFIT
+## What is implemented
 
-Local LLM tools such as [llmfit](https://github.com/AlexsJones/llmfit) are excellent at matching models to local hardware and exposing a rich terminal UI. FREEFIT takes a different target: **cloud/API endpoint fitness over time**.
+FREEFIT now contains a runnable Python core with:
 
-llmfit emphasizes hardware fit, model size, estimated/measured local throughput, fit, quality, context, and community benchmark views. FREEFIT emphasizes endpoint state: TTFT, output throughput, total latency, error/429 rate, quota, freshness, provider health, benchmark quality, and routing decisions.
+- SQLite endpoint + probe + score telemetry store
+- OpenAI-compatible provider adapter
+- streaming TTFT measurement
+- output token/sec measurement
+- P50/P95 summaries
+- reliability / 429 / timeout tracking
+- live score calculation with confidence
+- dense Rich terminal board
+- live observatory with sparklines
+- JSON output for agents/scripts
+- repeatable benchmark command
+- configuration-driven provider/model registry
+- doctor diagnostics
 
-## Core flow
+The provider layer is intentionally adapter-based. Any provider exposing OpenAI-compatible `/models` and `/chat/completions` can be added without changing the scoring or TUI layers.
+
+## Install
+
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -U pip
+pip install -e .
+Copy-Item freefit.example.json freefit.json
+```
+
+Set the provider API keys used by your config. Example:
+
+```powershell
+$env:GROQ_API_KEY = "..."
+$env:NVIDIA_API_KEY = "..."
+$env:OPENROUTER_API_KEY = "..."
+$env:OPENCODE_API_KEY = "..."
+```
+
+Never commit `freefit.json`, API keys, or the local `.freefit/` database.
+
+## Run
+
+Open the live observatory:
+
+```bash
+freefit
+```
+
+Show endpoint rankings:
+
+```bash
+freefit models
+freefit models --free-only
+```
+
+Run a single live probe:
+
+```bash
+freefit probe groq:openai/gpt-oss-120b
+```
+
+Benchmark configured endpoints:
+
+```bash
+freefit bench --runs 5 --warmup 1
+```
+
+Agent-friendly JSON:
+
+```bash
+freefit --json status
+freefit models --json
+freefit bench --json
+```
+
+Diagnostics:
+
+```bash
+freefit doctor
+```
+
+## TUI / graphics
+
+FREEFIT follows the information density that makes llmfit useful, while changing the unit of analysis from **local model × hardware** to **cloud endpoint × provider × live conditions**.
+
+The primary board exposes:
+
+```text
+STATE  MODEL  PROVIDER  FREE  SCORE  TTFT  TOK/S  P95  429  CONF
+```
+
+The observatory adds rolling sparklines:
+
+```text
+TTFT  ▂▂▃▄▅▇█▆▄▃
+TPS   █▇▇▆▄▂▂▃▅▆
+```
+
+See [`docs/LLMFIT-REVIEW.md`](docs/LLMFIT-REVIEW.md) and [`docs/TUI-DESIGN.md`](docs/TUI-DESIGN.md) for the full visual system.
+
+## Architecture
 
 ```text
 Discovery
    ↓
 Registry
    ↓
-Health Monitor
+Health
    ↓
 Speed Probe
    ↓
@@ -36,58 +131,18 @@ Learning
 Fallback
 ```
 
-## Primary product surfaces
+The current release implements the local registry, probe, benchmark, scoring, store, CLI and TUI layers. Router/fallback/discovery schedulers are defined by the contracts and are the next implementation layer.
 
-- **FREEFIT TUI** — dense, interactive terminal dashboard.
-- **Model detail view** — latency, throughput, reliability, capabilities, quota, history.
-- **Provider view** — provider-wide health, rate limits, free-tier status and incidents.
-- **Compare view** — compare models/endpoints side-by-side.
-- **Live observatory** — live speed/health trends and degradation detection.
-- **Routing matrix** — best endpoint per task profile.
-- **JSON/API mode** — machine-readable output for Kimi Code, Hermes-Agent, scripts and other agents.
+## Important measurement rule
 
-## Design principles
+FREEFIT measures **the endpoint**, not just the model name. The same model can have different TTFT, throughput, quota and reliability across providers. Scores always retain timestamp, sample count and provenance.
 
-1. **Measured beats guessed.** Real probes outrank static estimates.
-2. **Endpoint identity matters.** A model can be fast at one provider and slow at another.
-3. **Freshness matters.** A score without a timestamp is unsafe for routing.
-4. **Free is a policy state, not a boolean.** Permanent-free, quota-free, limited-time, trial-credit and local-only must be distinct.
-5. **Never hide uncertainty.** Every score carries sample count, source and confidence.
-6. **Fail gracefully.** One provider failure must not stop the router.
+## Documentation
 
-## Documentation map
-
-| Document | Purpose |
-|---|---|
-| [`docs/SYSTEM-OVERVIEW.md`](docs/SYSTEM-OVERVIEW.md) | Product and subsystem overview |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Logical and runtime architecture |
-| [`docs/LLMFIT-REVIEW.md`](docs/LLMFIT-REVIEW.md) | Review of llmfit UX and FREEFIT improvements |
-| [`docs/TUI-DESIGN.md`](docs/TUI-DESIGN.md) | FREEFIT terminal UI and graphics system |
-| [`docs/METRICS.md`](docs/METRICS.md) | Latency, throughput and reliability definitions |
-| [`docs/BENCHMARK.md`](docs/BENCHMARK.md) | Benchmark methodology and workloads |
-| [`docs/SCORING.md`](docs/SCORING.md) | Composite score and confidence model |
-| [`docs/ROUTER.md`](docs/ROUTER.md) | Routing and decision policy |
-| [`docs/FALLBACK.md`](docs/FALLBACK.md) | Failure handling and fallback chains |
-| [`docs/REGISTRY.md`](docs/REGISTRY.md) | Provider/model/endpoint registry |
-| [`docs/DATA-MODEL.md`](docs/DATA-MODEL.md) | Storage entities and relationships |
-| [`docs/PROVIDERS.md`](docs/PROVIDERS.md) | Provider adapter contract |
-| [`docs/DISCOVERY.md`](docs/DISCOVERY.md) | Live model/provider discovery |
-| [`docs/HEALTH.md`](docs/HEALTH.md) | Health checks and degradation detection |
-| [`docs/QUOTA.md`](docs/QUOTA.md) | Free-tier and rate-limit tracking |
-| [`docs/CLI.md`](docs/CLI.md) | CLI commands and output contracts |
-| [`docs/OBSERVABILITY.md`](docs/OBSERVABILITY.md) | Events, logs, traces and dashboards |
-| [`docs/SECURITY.md`](docs/SECURITY.md) | API key and probe safety |
-| [`docs/TESTING.md`](docs/TESTING.md) | Test strategy |
-| [`docs/ROADMAP.md`](docs/ROADMAP.md) | Delivery phases |
+See `docs/` for the architecture, benchmark methodology, metrics, provider contract, routing policy, security model and roadmap.
 
 ## Status
 
-**Documentation foundation — v0.1**
+**v0.1.0 — runnable local control-plane core**
 
-This repository intentionally starts documentation-first so the implementation can follow stable contracts rather than repeated redesign.
-
-## Reference research
-
-- [llmfit](https://github.com/AlexsJones/llmfit)
-- [llmfit TUI guide](https://github.com/AlexsJones/llmfit/blob/main/docs/tui.md)
-- [llmfit benchmarking guide](https://github.com/AlexsJones/llmfit/blob/main/docs/benchmarking.md)
+Live measurements require valid provider credentials and a configured `freefit.json`. Provider catalogs, free policies and model IDs can change over time; the registry is deliberately configurable rather than embedding a permanent global “free model” truth.
