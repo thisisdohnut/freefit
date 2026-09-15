@@ -7,9 +7,9 @@
       "free_class": "F0",
       "free_now": true,
       "models": [
-        "openai/gpt-oss-120b:free",
-        "nvidia/nemotron-3-ultra:free",
-        "qwen/qwen3.5-27b:free"
+        "openrouter/free",
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "nvidia/nemotron-3-nano-omni:free"
       ]
     },
     {
@@ -17,7 +17,7 @@
       "base_url": "https://api.groq.com/openai/v1",
       "api_key_env": "GROQ_API_KEY",
       "free_class": "F1",
-      "free_now": true,
+      "free_now": false,
       "models": ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]
     },
     {
@@ -25,8 +25,8 @@
       "base_url": "https://integrate.api.nvidia.com/v1",
       "api_key_env": "NVIDIA_API_KEY",
       "free_class": "F1",
-      "free_now": true,
-      "models": ["nvidia/nemotron-3-ultra-550b-a55b", "nvidia/nemotron-3.5-lightning-30b-a3b"]
+      "free_now": false,
+      "models": ["openai/gpt-oss-20b", "deepseek-ai/deepseek-v4-flash-0731"]
     },
     {
       "name": "opencode-zen",
@@ -34,7 +34,16 @@
       "api_key_env": "OPENCODE_API_KEY",
       "free_class": "F2",
       "free_now": true,
-      "models": ["big-pickle", "nemotron-3-ultra-free", "nemotron-3.5-lightning-free"]
+      "models": [
+        "big-pickle",
+        "mimo-v2.5-free",
+        "laguna-s-2.1-free",
+        "ling-3.0-flash-fin-free",
+        "nemotron-3-ultra-free",
+        "nemotron-3.5-lightning-free",
+        "north-mini-code-free",
+        "deepseek-v4-flash-free"
+      ]
     }
   ]
 }
