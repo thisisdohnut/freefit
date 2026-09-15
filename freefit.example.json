@@ -1,0 +1,40 @@
+{
+  "providers": [
+    {
+      "name": "openrouter",
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "free_class": "F0",
+      "free_now": true,
+      "models": [
+        "openai/gpt-oss-120b:free",
+        "nvidia/nemotron-3-ultra:free",
+        "qwen/qwen3.5-27b:free"
+      ]
+    },
+    {
+      "name": "groq",
+      "base_url": "https://api.groq.com/openai/v1",
+      "api_key_env": "GROQ_API_KEY",
+      "free_class": "F1",
+      "free_now": true,
+      "models": ["openai/gpt-oss-120b", "openai/gpt-oss-20b"]
+    },
+    {
+      "name": "nvidia",
+      "base_url": "https://integrate.api.nvidia.com/v1",
+      "api_key_env": "NVIDIA_API_KEY",
+      "free_class": "F1",
+      "free_now": true,
+      "models": ["nvidia/nemotron-3-ultra-550b-a55b", "nvidia/nemotron-3.5-lightning-30b-a3b"]
+    },
+    {
+      "name": "opencode-zen",
+      "base_url": "https://opencode.ai/zen/v1",
+      "api_key_env": "OPENCODE_API_KEY",
+      "free_class": "F2",
+      "free_now": true,
+      "models": ["big-pickle", "nemotron-3-ultra-free", "nemotron-3.5-lightning-free"]
+    }
+  ]
+}
